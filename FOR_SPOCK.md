@@ -145,3 +145,55 @@ Each file follows this structure:
 ---
 
 *Built by Keplr Agent — Agent Zero stack on VPS — 2026-02-26*
+
+---
+
+## 🧠 Obsidian Shared Memory Setup
+
+### What this is
+The `obsidian-memory` skill lets all three agents (Keplr, Spock, Milton) read and write to a shared Obsidian vault hosted **on Spock/Chronos**. It uses the **Local REST API** community plugin to expose the vault over HTTPS on port `27123`. Keplr and Milton reach it via Tailscale.
+
+### Setup steps (do once on Spock)
+
+1. **Install plugin** — In Obsidian: Settings → Community Plugins → Browse → search **"Local REST API"** by coddingtonbear → Install → Enable
+
+2. **Generate API key** — In the plugin settings, click "Generate API Key". Copy it.
+
+3. **Note the port** — Default is `27123`. Leave as-is unless conflicting.
+
+4. **Create vault folder structure** — In your Obsidian vault, create these top-level folders:
+   ```
+   Shared/
+   Shared/projects/
+   Keplr/
+   Keplr/memories/
+   Spock/
+   Spock/memories/
+   Milton/
+   Milton/memories/
+   Infrastructure/
+   ```
+
+5. **Seed the vault** — The `obsidian-memory/references/` folder in this repo contains ready-to-paste seed notes:
+   - `vault-seed-user-profile.md` → paste into `Shared/user-profile.md`
+   - `vault-seed-agent-roster.md` → paste into `Shared/agent-roster.md`
+   - `vault-seed-company-context.md` → paste into `Shared/company-context.md`
+   - `vault-seed-network-map.md` → paste into `Infrastructure/network-map.md`
+   - `vault-seed-active-projects.md` → paste into `Shared/active-projects.md`
+
+6. **Add API key to agent envs** — Add to `.env` on each agent machine:
+   ```
+   OBSIDIAN_API_KEY=<your-generated-key>
+   ```
+   For Keplr (VPS), add to `/a0/usr/workdir/mission-control/agent-systems/keplr/config/env.template`
+
+7. **Test from Keplr** — Keplr will run:
+   ```bash
+   curl -k -H "Authorization: Bearer <key>" https://100.124.20.121:27123/vault/
+   ```
+   You should get a JSON list of vault files.
+
+8. **Keep Obsidian running** — The REST API only works while Obsidian is open on Chronos. Consider pinning it to the taskbar / startup.
+
+### Interactive API docs
+https://coddingtonbear.github.io/obsidian-local-rest-api/
